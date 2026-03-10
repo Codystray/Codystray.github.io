@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cody — Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Syne:wght@400..800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #131720;
+      --border:    #1e2430;
+      --muted:     #3a4558;
+      --text:      #c9d1e0;
+      --subtle:    #7a8ba3;
+      --accent:    #5af0a0;
+      --accent2:   #3dd6f5;
+      --accent3:   #f0a05a;
+      --danger:    #f05a7a;
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Syne', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── NOISE TEXTURE ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0.4;
+    }
+
+    a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--accent2); }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(13,15,20,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 52px;
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    .nav-logo span { color: var(--subtle); }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 12px;
+      color: var(--subtle);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 52px;
+      position: relative;
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(90,240,160,0.07) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.2s forwards;
+    }
+
+    .hero-eyebrow::before {
+      content: '> ';
+      color: var(--muted);
+    }
+
+    h1 {
+      font-family: var(--sans);
+      font-size: clamp(42px, 8vw, 80px);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      color: #e8edf5;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.35s forwards;
+    }
+
+    h1 .accent-word {
+      color: var(--accent);
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero-desc {
+      max-width: 480px;
+      color: var(--subtle);
+      font-size: 13px;
+      line-height: 1.8;
+      margin-bottom: 36px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.5s forwards;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.65s forwards;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0d0f14;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: transparent;
+      color: var(--accent);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--subtle);
+      border-color: var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── SECTION SHARED ── */
+    section {
+      padding: 96px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .section-label::before { content: '// '; color: var(--muted); }
+
+    h2 {
+      font-family: var(--sans);
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 700;
+      color: #e8edf5;
+      margin-bottom: 48px;
+      letter-spacing: -0.01em;
+      padding-bottom: 0.15em;
+      overflow: visible;
+    }
+
+    /* ── ABOUT ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    @media (max-width: 600px) {
+      .about-grid { grid-template-columns: 1fr; }
+    }
+
+    .about-text p {
+      color: var(--subtle);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .about-text p strong { color: var(--text); }
+
+    .stack-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stack-list li {
+      font-size: 12px;
+      color: var(--subtle);
+      padding: 6px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .stack-list li::before { content: '↳ '; color: var(--muted); }
+    .stack-list li:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ── PROJECTS ── */
+    .projects-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 28px;
+      transition: border-color 0.25s, transform 0.25s;
+      position: relative;
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--accent);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 0.3s;
+    }
+
+    .project-card:hover { border-color: var(--muted); transform: translateX(4px); }
+    .project-card:hover::before { transform: scaleY(1); }
+
+    .project-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .project-title {
+      font-family: var(--sans);
+      font-size: 18px;
+      font-weight: 700;
+      color: #e8edf5;
+      line-height: 1.3;
+      padding-bottom: 0.2em;
+      overflow: visible;
+    }
+
+    .project-links {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .project-links a {
+      font-size: 11px;
+      color: var(--subtle);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+
+    .project-links a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .project-desc {
+      color: var(--subtle);
+      font-size: 12px;
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: rgba(90,240,160,0.07);
+      color: var(--accent);
+      border: 1px solid rgba(90,240,160,0.2);
+      letter-spacing: 0.03em;
+    }
+
+    .tag.blue {
+      background: rgba(61,214,245,0.07);
+      color: var(--accent2);
+      border-color: rgba(61,214,245,0.2);
+    }
+
+    .tag.orange {
+      background: rgba(240,160,90,0.07);
+      color: var(--accent3);
+      border-color: rgba(240,160,90,0.2);
+    }
+
+    /* ── CONTACT ── */
+    .contact-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--subtle);
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .contact-link:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .contact-link .icon {
+      width: 16px; height: 16px;
+      opacity: 0.6;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+
+    footer span { color: var(--accent); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s, transform 0.5s;
+      overflow: visible;
+      will-change: transform, opacity;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ── TERMINAL BLINK ── */
+    .blink {
+      display: inline-block;
+      width: 10px; height: 1.2em;
+      background: var(--accent);
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <div class="nav-logo">codystray<span>@portfolio</span>:~$</div>
+      <ul class="nav-links">
+        <li><a href="#about">about</a></li>
+        <li><a href="#projects">projects</a></li>
+        <li><a href="#contact">contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="container">
+      <div class="hero-content">
+        <p class="hero-eyebrow">Computer Science — Oregon State University</p>
+        <h1>Cody<br><span class="accent-word">Strehlow</span><span class="blink"></span></h1>
+        <p class="hero-desc">
+          I build systems and data-driven applications with a focus on performance, reliability, and clean abstractions.
+          My work spans from low-level storage engines and operating systems in C to database-backed web applications and data pipelines in Python.
+        </p>
+        <div class="hero-ctas">
+          <a href="#projects" class="btn btn-primary">View Projects</a>
+          <a href="https://github.com/YOUR_USERNAME" target="_blank" class="btn btn-ghost">GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <p class="section-label reveal">about</p>
+      <h2 class="reveal">A bit about me.</h2>
+      <div class="about-grid">
+        <div class="about-text reveal">
+          <p>
+            I'm a CS student at <strong>Oregon State University</strong> with a focus on systems programming,
+            databases, and data science. I like understanding how things work at a
+            low level, whether that's NVMe storage, query optimization, or operating system internals.
+          </p>
+          <p>
+            I'm currently looking for internship and new grad opportunities where I can work on
+            infrastructure, backend systems, or data engineering.
+          </p>
+        </div>
+        <div class="reveal">
+          <p class="section-label" style="margin-bottom: 16px;">stack</p>
+          <ul class="stack-list">
+            <li>C / C++</li>
+            <li>clang / LLVM</li>
+            <li>MySQL / MariaDB</li>
+            <li>Node.js / Express</li>
+            <li>Linux CLI (bash/zsh)</li>
+            <li>Git</li>
+            <li>Python</li>
+            <li>pandas / numpy</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="container">
+      <p class="section-label reveal">projects</p>
+      <h2 class="reveal">Things I've built.</h2>
+
+      <div class="projects-grid">
+
+        <!-- Trophy Tracker -->
+        <div class="project-card reveal">
+          <div class="project-header">
+            <div class="project-title">Trophy Tracker</div>
+            <div class="project-links">
+              <a href="https://github.com/YOUR_USERNAME/trophy-tracker" target="_blank">GitHub ↗</a>
+            </div>
+          </div>
+          <p class="project-desc">
+            A cross-platform gaming achievement tracker built as a full-stack database-backed web application
+            for my Intro to Databases course. Features a normalized relational schema, complex SQL queries with subqueries,
+            and a complete CRUD UI. Developed collaboratively with one other teammate.
+            Original work covers schema design, query logic, and UI.
+          </p>
+          <div class="tag-list">
+            <span class="tag">SQL</span>
+            <span class="tag">Database Design</span>
+            <span class="tag blue">Node.js</span>
+            <span class="tag blue">HTML/CSS</span>
+            <span class="tag orange">Intro to Databases</span>
+          </div>
+        </div>
+
+        <!-- nvme-kv-engine -->
+        <div class="project-card reveal">
+          <div class="project-header">
+            <div class="project-title">nvme-kv-engine</div>
+            <div class="project-links">
+              <a href="https://github.com/nvme-kv-osu-2025/nvme-kv-engine" target="_blank">GitHub ↗</a>
+            </div>
+          </div>
+          <p class="project-desc">
+            A key-value storage engine written in C leveraging the new NVMe Key-Value Command Set.
+            Focuses on low-latency I/O, efficient memory management, and a clean storage abstraction layer.
+            Collaborative senior capstone project with a focus on performance and correctness.
+          </p>
+          <div class="tag-list">
+            <span class="tag">C</span>
+            <span class="tag">Systems Programming</span>
+            <span class="tag blue">SPDK / KVSSD</span>
+            <span class="tag blue">Storage Engine</span>
+            <span class="tag orange">Capstone Project</span>
+          </div>
+        </div>
+
+        <!-- Data Science Work -->
+        <div class="project-card reveal">
+          <div class="project-header">
+            <div class="project-title">Data Analysis Portfolio</div>
+            <div class="project-links">
+              <a href="https://github.com/Codystray/CS332-term-project" target="_blank">GitHub ↗</a>
+            </div>
+          </div>
+          <p class="project-desc">
+            A collection of data analysis and machine learning work including exploratory data analysis,
+            KMeans clustering, API data collection via NewsAPI, and data cleaning pipelines.
+            Built with Python, pandas, scikit-learn, and matplotlib.
+          </p>
+          <div class="tag-list">
+            <span class="tag">Python</span>
+            <span class="tag">EDA / ML</span>
+            <span class="tag blue">scikit-learn</span>
+            <span class="tag blue">matplotlib</span>
+            <span class="tag orange">Intro to Applied Data Science</span>
+          </div>
+        </div>
+
+        <!-- Dotfiles -->
+        <div class="project-card reveal">
+          <div class="project-header">
+            <div class="project-title">Xv6 Kernel Extensions</div>
+            <div class="project-links">
+              <a href="https://github.com/Codystray/xv6-labs-2025" target="_blank">GitHub ↗</a>
+            </div>
+          </div>
+          <p class="project-desc">
+              A series of kernel-level labs extending Xv6, a Unix-like teaching OS running on RISC-V.
+              Labs cover system calls, page tables, traps, copy-on-write fork, locks, file systems, and memory-mapped I/O.
+              All kernel modifications written in C and tested in QEMU.
+          </p>
+          <div class="tag-list">
+            <span class="tag">C</span>
+            <span class="tag">Kernel Development</span>
+            <span class="tag blue">RISC-V</span>
+            <span class="tag blue">QEMU / GDB</span>
+            <span class="tag orange">Operating Systems II</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <p class="section-label reveal">contact</p>
+      <h2 class="reveal">Get in touch.</h2>
+      <p class="reveal" style="color: var(--subtle); font-size: 13px; margin-bottom: 32px; max-width: 440px;">
+        I'm currently seeking full-time work or internship opportunities, but am always open to collaborating or helping out with open-source projects.
+      </p>
+      <div class="contact-row reveal">
+        <a href="codystray@gmail.com" class="contact-link">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="m2 7 10 7 10-7"/>
+          </svg>
+          codystray@gmail.com
+        </a>
+        <a href="https://github.com/Codystray" target="_blank" class="contact-link">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      built with <span>Jekyll</span> — hosted on github pages
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 60);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+
+    // Nav active link highlight
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 80) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current
+          ? 'var(--accent)' : '';
+      });
+    });
+  </script>
+</body>
+</html>
